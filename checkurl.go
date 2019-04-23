@@ -1,6 +1,9 @@
 package phishtank
 
-import "encoding/json"
+import (
+	"encoding/base64"
+	"encoding/json"
+)
 
 type CheckURLResults struct {
 	URL        string `json:"url"`
@@ -16,7 +19,7 @@ type CheckURLResponse struct {
 func (c *Client) CheckURL(u string) (*CheckURLResponse, error) {
 	param := &Param{
 		name:  "url",
-		value: u,
+		value: base64.StdEncoding.EncodeToString([]byte(u)),
 	}
 
 	response := &CheckURLResponse{}
