@@ -5,17 +5,20 @@ import (
 	"encoding/json"
 )
 
+// Results format which is contained checkurl response
 type CheckURLResults struct {
 	URL        string `json:"url"`
 	InDatabase bool   `json:"in_database"`
 }
 
+// Response format for checkurl response
 type CheckURLResponse struct {
 	Meta      ResponseMetadata `json:"meta"`
 	Results   CheckURLResults  `json:"results"`
 	ErrorText string           `json:"errortext"`
 }
 
+// CheckURL posts URL to phishtank and fetch check results
 func (c *Client) CheckURL(u string) (*CheckURLResponse, error) {
 	param := &Param{
 		name:  "url",
