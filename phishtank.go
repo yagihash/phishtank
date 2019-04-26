@@ -5,10 +5,8 @@ package phishtank
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -50,7 +48,6 @@ func (e *InvalidContentType) Error() string {
 type Client struct {
 	apikey     string
 	endpoint   string
-	log        *log.Logger
 	httpclient httpClient
 }
 
@@ -58,16 +55,9 @@ type Client struct {
 type Option func(*Client)
 
 // OptionHTTPClient is option func for replacing HTTP client
-func OptionHTTPClient(client httpClient) func(*Client) {
+func OptionHttpClient(client httpClient) func(*Client) {
 	return func(c *Client) {
 		c.httpclient = client
-	}
-}
-
-// OptionLog is option func for replacing Logger
-func OptionLog(l log.Logger) func(*Client) {
-	return func(c *Client) {
-		c.log = &l
 	}
 }
 
@@ -84,7 +74,6 @@ func New(apikey string, options ...Option) *Client {
 		apikey:     apikey,
 		endpoint:   APIURL,
 		httpclient: &http.Client{},
-		log:        log.New(os.Stderr, "yagihashoo/phishtank", log.LstdFlags|log.Lshortfile),
 	}
 
 	for _, opt := range options {
