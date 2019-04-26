@@ -26,19 +26,6 @@ jobs:
 
       - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       - run: bash <(curl -s https://codecov.io/bash)
-  release:
-    docker:
-      - image: circleci/golang:1.12
-
-    environment:
-      GO111MODULE: "on"
-    working_directory: /go/src/github.com/yagihashoo/phishtank
-    steps:
-      - checkout
-
-      - run: go get github.com/tcnksm/ghr
-      - run: mkdir dist
-      - run: ghr $(cat version.txt) dist && echo Done || echo No release
 workflows:
   version: 2
   build_and_test:
@@ -47,25 +34,4 @@ workflows:
       - test:
           requires:
             - build
-  release:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - master
-      - test:
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - build
-      - release:
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - test
 
