@@ -84,7 +84,7 @@ func New(apikey string, options ...Option) *Client {
 }
 
 // post sends HTTP POST request with given parameters
-func (c *Client) post(params ...Param) ([]byte, error) {
+func (c *Client) post(params ...*Param) ([]byte, error) {
 	values := url.Values{}
 	values.Set("api_key", c.apikey)
 	values.Set("format", APIFORMAT)

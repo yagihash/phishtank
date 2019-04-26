@@ -27,7 +27,7 @@ func (c *Client) CheckURL(u string) (*CheckURLResponse, error) {
 
 	response := &CheckURLResponse{}
 
-	body, err := c.post(*param)
+	body, err := c.post(param)
 	if err != nil {
 		return response, err
 	}
