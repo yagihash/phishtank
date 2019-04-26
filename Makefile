@@ -1,5 +1,8 @@
 JOB=build
 
+build: test
+	@ go build
+
 test:
 	@ go vet ./...
 	@ richgo test -v -cover ./...
