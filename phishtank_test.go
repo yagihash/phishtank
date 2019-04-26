@@ -11,6 +11,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	testAPIKey := func(t *testing.T) {
 		t.Helper()
 		cases := []struct {
