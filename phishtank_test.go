@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,9 +25,7 @@ func TestNew(t *testing.T) {
 			t.Run(c.name, func(t *testing.T) {
 				client := New(c.input)
 				got := client.apikey
-				if diff := cmp.Diff(got, c.want); diff != "" {
-					t.Errorf("(-got +want)%s", diff)
-				}
+				assert.Equal(t, c.want, got)
 			})
 		}
 	}
@@ -53,9 +50,7 @@ func TestNew(t *testing.T) {
 					client = New("apikey")
 				}
 				got := client.endpoint
-				if diff := cmp.Diff(got, c.want); diff != "" {
-					t.Errorf("(-got +want)%s", diff)
-				}
+				assert.Equal(t, c.want, got)
 			})
 		}
 	}
@@ -80,9 +75,7 @@ func TestNew(t *testing.T) {
 					client = New("apikey")
 				}
 				got := client.httpclient
-				if diff := cmp.Diff(got, c.want); diff != "" {
-					t.Errorf("(-got +want)%s", diff)
-				}
+				assert.Equal(t, c.want, got)
 			})
 		}
 	}
