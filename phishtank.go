@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -29,7 +30,7 @@ type Param struct {
 	value string
 }
 
-// ReponseMetadata is struct for metadata in API reponse
+// ResponseMetadata is struct for metadata in API response
 type ResponseMetadata struct {
 	Timestamp string `json:"timestamp"`
 	ServerID  string `json:"serverid"`
@@ -44,11 +45,29 @@ func (e *InvalidContentType) Error() string {
 	return "Response is not JSON"
 }
 
+/*
+InvalidResponseHeader is type of error when the response lacks or contains headers related to request limit;
+
+ X-Request-Limit-Interval
+ X-Request-Limit
+ X-Request-Count
+*/
+type InvalidResponseHeader struct {
+	Name string
+}
+
+func (e *InvalidResponseHeader) Error() string {
+	return "Insufficient response header"
+}
+
 // Client is HTTP client for API call
 type Client struct {
-	apikey     string
-	endpoint   string
-	httpclient httpClient
+	apikey               string
+	endpoint             string
+	httpclient           httpClient
+	RequestLimitInterval uint16
+	RequestLimit         uint16
+	RequestCount         uint16
 }
 
 // Option is client option
@@ -114,10 +133,67 @@ func (c *Client) post(params ...*Param) ([]byte, error) {
 		return nil, &InvalidContentType{}
 	}
 
+	if _, err := c.updateReqLimitInterval(resp); err != nil {
+		return nil, err
+	}
+
+	if _, err := c.updateReqLimit(resp); err != nil {
+		return nil, err
+	}
+
+	if _, err := c.updateReqCount(resp); err != nil {
+		return nil, err
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return body, err
+}
+
+// updateReqLimitInterval receives header value string and updates latest request limit interval of client
+func (c *Client) updateReqLimitInterval(resp *http.Response) (uint16, error) {
+	header := "x-request-limit-interval"
+	value := resp.Header.Get(header)
+	if value == "" {
+		return 0, &InvalidResponseHeader{
+			Name: header,
+		}
+	}
+
+	interval, err := strconv.ParseUint(strings.Split(value, " ")[0], 10, 16)
+	c.RequestLimitInterval = uint16(interval)
+	return c.RequestLimitInterval, err
+}
+
+// updateReqLimit receives header value string and updates latest request limit of client
+func (c *Client) updateReqLimit(resp *http.Response) (uint16, error) {
+	header := "x-request-limit"
+	value := resp.Header.Get(header)
+	if value == "" {
+		return 0, &InvalidResponseHeader{
+			Name: header,
+		}
+	}
+
+	limit, err := strconv.ParseUint(value, 10, 16)
+	c.RequestLimit = uint16(limit)
+	return c.RequestLimit, err
+}
+
+// updateReqCount receives header value string and updates latest request count of client
+func (c *Client) updateReqCount(resp *http.Response) (uint16, error) {
+	header := "x-request-count"
+	value := resp.Header.Get(header)
+	if value == "" {
+		return 0, &InvalidResponseHeader{
+			Name: header,
+		}
+	}
+
+	count, err := strconv.ParseUint(value, 10, 16)
+	c.RequestCount = uint16(count)
+	return c.RequestCount, err
 }
