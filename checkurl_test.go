@@ -54,7 +54,13 @@ func createCheckURLHandler(t *testing.T, indb bool, format string) func(http.Res
 		if err != nil {
 			t.Error(err)
 		}
-		w.Write([]byte(body))
+		w.Header().Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
+		w.Header().Set(HEADER_REQLIMIT, "10")
+		w.Header().Set(HEADER_REQCOUNT, "1")
+
+		if _, err := w.Write([]byte(body)); err != nil {
+			t.Error(err)
+		}
 	}
 }
 

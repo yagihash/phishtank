@@ -15,6 +15,7 @@ func TestNew(t *testing.T) {
 
 	testAPIKey := func(t *testing.T) {
 		t.Helper()
+
 		cases := []struct {
 			name  string
 			input string
@@ -34,6 +35,7 @@ func TestNew(t *testing.T) {
 
 	testAPIURL := func(t *testing.T) {
 		t.Helper()
+
 		cases := []struct {
 			name  string
 			input Option
@@ -59,6 +61,7 @@ func TestNew(t *testing.T) {
 
 	testHttpClient := func(t *testing.T) {
 		t.Helper()
+
 		cases := []struct {
 			name  string
 			input Option
@@ -162,12 +165,68 @@ func TestPost(t *testing.T) {
 
 		assert.Equal(t, want.Data.DataText, got.Data.DataText)
 	})
+
+	cases := []struct {
+		name  string
+		input string
+		want  *InvalidResponseHeader
+	}{
+		{name: "CheckInvalidReqLimitInterval", input: HEADER_REQCOUNTINTERVAL, want: &InvalidResponseHeader{}},
+		{name: "CheckInvalidReqCount", input: HEADER_REQCOUNT, want: &InvalidResponseHeader{}},
+		{name: "CheckInvalidReqLimit", input: HEADER_REQLIMIT, want: &InvalidResponseHeader{}},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(createTestHandlerLacksReqLimitHeaders(t, c.input)))
+			defer ts.Close()
+
+			client := New("apikey", OptionAPIURL(ts.URL))
+
+			_, err := client.post()
+			assert.EqualError(t, err, c.want.Error())
+		})
+	}
+}
+
+func TestUpdateReqLimitInterval(t *testing.T) {
+	t.Parallel()
+
+	client := New("apikey")
+	header := &http.Header{}
+	header.Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
+	resp := &http.Response{
+		Header: *header,
+	}
+
+	want := uint16(300)
+	got, err := client.updateReqLimitInterval(resp)
+
+	assert.NoError(t, err)
+	assert.Equal(t, want, got)
+}
+
+func TestUpdateReqLimit(t *testing.T) {
+
+}
+
+func TestUpdateReqCount(t *testing.T) {
+
 }
 
 func TestInvalidContentType(t *testing.T) {
 	err := &InvalidContentType{}
 	got := err.Error()
 	want := "Response is not JSON"
+	assert.Equal(t, want, got)
+}
+
+func TestInvalidResponseHeader(t *testing.T) {
+	err := &InvalidResponseHeader{
+		Name: "x-foobar",
+	}
+	got := err.Error()
+	want := "Insufficient response header"
 	assert.Equal(t, want, got)
 }
 
@@ -181,7 +240,14 @@ func createEchoHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			t.Error(err)
 		}
-		w.Write([]byte(body))
+
+		w.Header().Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
+		w.Header().Set(HEADER_REQLIMIT, "10")
+		w.Header().Set(HEADER_REQCOUNT, "1")
+
+		if _, err := w.Write([]byte(body)); err != nil {
+			t.Error(err)
+		}
 	}
 }
 
@@ -195,30 +261,70 @@ func createTestHandler(t *testing.T, r *testResponse, format string) func(http.R
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", format)
-		w.Write([]byte(body))
+		w.Header().Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
+		w.Header().Set(HEADER_REQLIMIT, "10")
+		w.Header().Set(HEADER_REQCOUNT, "1")
+
+		if _, err := w.Write([]byte(body)); err != nil {
+			t.Error(err)
+		}
 	}
 }
 
 func createSuccessHandler(t *testing.T, datatext string) func(http.ResponseWriter, *http.Request) {
 	t.Helper()
+
 	tr := createSuccessTestResponse(t, datatext)
 	return createTestHandler(t, tr, "application/json")
 }
 
 func createErrorHandler(t *testing.T, errortext string) func(http.ResponseWriter, *http.Request) {
 	t.Helper()
+
 	tr := createErrorTestResponse(t, errortext)
 	return createTestHandler(t, tr, "application/json")
 }
 
+func createTestHandlerLacksReqLimitHeaders(t *testing.T, targetHeader string) func(http.ResponseWriter, *http.Request) {
+	t.Helper()
+
+	r := createSuccessTestResponse(t, "foobar")
+	body, err := json.Marshal(r)
+	if err != nil {
+		t.Error(err)
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+
+		if targetHeader != HEADER_REQCOUNTINTERVAL {
+			w.Header().Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
+		}
+
+		if targetHeader != HEADER_REQLIMIT {
+			w.Header().Set(HEADER_REQLIMIT, "10")
+		}
+
+		if targetHeader != HEADER_REQCOUNT {
+			w.Header().Set(HEADER_REQCOUNT, "1")
+		}
+
+		if _, err := w.Write([]byte(body)); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
 func createXMLHandler(t *testing.T, datatext string) func(http.ResponseWriter, *http.Request) {
 	t.Helper()
+
 	tr := createSuccessTestResponse(t, datatext)
 	return createTestHandler(t, tr, "application/xml")
 }
 
 func createSuccessTestResponse(t *testing.T, datatext string) *testResponse {
 	t.Helper()
+
 	return &testResponse{
 		Metadata: createSuccessTestMetadata(t),
 		Data:     createTestResponse(t, datatext),
@@ -227,6 +333,7 @@ func createSuccessTestResponse(t *testing.T, datatext string) *testResponse {
 
 func createErrorTestResponse(t *testing.T, errortext string) *testResponse {
 	t.Helper()
+
 	return &testResponse{
 		Metadata:  createErrorTestMetadata(t),
 		ErrorText: errortext,
@@ -235,6 +342,7 @@ func createErrorTestResponse(t *testing.T, errortext string) *testResponse {
 
 func createSuccessTestMetadata(t *testing.T) ResponseMetadata {
 	t.Helper()
+
 	return ResponseMetadata{
 		Timestamp: "2019-04-26T04:46:25+00:00",
 		ServerID:  "deadbeef",
@@ -245,6 +353,7 @@ func createSuccessTestMetadata(t *testing.T) ResponseMetadata {
 
 func createErrorTestMetadata(t *testing.T) ResponseMetadata {
 	t.Helper()
+
 	return ResponseMetadata{
 		Timestamp: "2019-04-26T04:46:25+00:00",
 		ServerID:  "deadbeef",
@@ -255,6 +364,7 @@ func createErrorTestMetadata(t *testing.T) ResponseMetadata {
 
 func createTestResponse(t *testing.T, datatext string) testResponseData {
 	t.Helper()
+
 	return testResponseData{
 		DataText: datatext,
 	}

@@ -17,6 +17,10 @@ const (
 	// PhishTank API is supporting XML, PHP serialized obj, and json
 	// Package phishtank is only supporting JSON
 	APIFORMAT = "json"
+
+	HEADER_REQCOUNTINTERVAL = "x-request-limit-interval"
+	HEADER_REQLIMIT         = "x-request-limit"
+	HEADER_REQCOUNT         = "x-request-count"
 )
 
 // httpClient defines minimal interface for client
@@ -155,11 +159,10 @@ func (c *Client) post(params ...*Param) ([]byte, error) {
 
 // updateReqLimitInterval receives header value string and updates latest request limit interval of client
 func (c *Client) updateReqLimitInterval(resp *http.Response) (uint16, error) {
-	header := "x-request-limit-interval"
-	value := resp.Header.Get(header)
+	value := resp.Header.Get(HEADER_REQCOUNTINTERVAL)
 	if value == "" {
 		return 0, &InvalidResponseHeader{
-			Name: header,
+			Name: HEADER_REQCOUNTINTERVAL,
 		}
 	}
 
@@ -170,11 +173,10 @@ func (c *Client) updateReqLimitInterval(resp *http.Response) (uint16, error) {
 
 // updateReqLimit receives header value string and updates latest request limit of client
 func (c *Client) updateReqLimit(resp *http.Response) (uint16, error) {
-	header := "x-request-limit"
-	value := resp.Header.Get(header)
+	value := resp.Header.Get(HEADER_REQLIMIT)
 	if value == "" {
 		return 0, &InvalidResponseHeader{
-			Name: header,
+			Name: HEADER_REQLIMIT,
 		}
 	}
 
@@ -185,11 +187,10 @@ func (c *Client) updateReqLimit(resp *http.Response) (uint16, error) {
 
 // updateReqCount receives header value string and updates latest request count of client
 func (c *Client) updateReqCount(resp *http.Response) (uint16, error) {
-	header := "x-request-count"
-	value := resp.Header.Get(header)
+	value := resp.Header.Get(HEADER_REQCOUNT)
 	if value == "" {
 		return 0, &InvalidResponseHeader{
-			Name: header,
+			Name: HEADER_REQCOUNT,
 		}
 	}
 
