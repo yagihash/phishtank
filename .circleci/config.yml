@@ -24,7 +24,9 @@ jobs:
     steps:
       - checkout
 
-      - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+      - run: go get -u github.com/kyoh86/richgo
+      - run: go vet ./...
+      - run: richgo test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       - run: bash <(curl -s https://codecov.io/bash)
 workflows:
   version: 2
