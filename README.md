@@ -16,3 +16,4 @@ func main() {
 	fmt.Printf("%v", body.Results.InDatabase)
 }
 ```
+[Playground](https://play.golang.org/p/MzcsDqXqqMF)
