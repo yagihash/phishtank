@@ -1,4 +1,4 @@
-module github.com/yagihash/phishtank
+module github.com/yagihashoo/phishtank
 
 go 1.12
 
