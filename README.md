@@ -1,5 +1,5 @@
 # phishtank
-[![CircleCI](https://circleci.com/gh/yagihashoo/phishtank.svg?style=svg)](https://circleci.com/gh/yagihashoo/phishtank) [![codecov](https://codecov.io/gh/yagihashoo/phishtank/branch/master/graph/badge.svg)](https://codecov.io/gh/yagihashoo/phishtank)
+[![CircleCI](https://circleci.com/gh/yagihash/phishtank.svg?style=svg)](https://circleci.com/gh/yagihash/phishtank) [![codecov](https://codecov.io/gh/yagihash/phishtank/branch/master/graph/badge.svg)](https://codecov.io/gh/yagihash/phishtank)
 
 ```go
 package main
@@ -7,7 +7,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/yagihashoo/phishtank"
+	"github.com/yagihash/phishtank"
 )
 
 func main() {
