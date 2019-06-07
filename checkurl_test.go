@@ -22,6 +22,7 @@ func TestCheckURL(t *testing.T) {
 		{name: "InDatabase", input: "https://example.com", indb: true, format: "application/json", want: true},
 		{name: "NotInDatabase", input: "https://example.com", indb: false, format: "application/json", want: false},
 		{name: "InvalidContentType", input: "https://example.com", indb: false, format: "application/xml", want: false},
+		{name: "InvalidFormatJSON", input: "https://example.com", indb: false, format: "invalidjson", want: false},
 	}
 
 	for _, c := range cases {
@@ -54,6 +55,12 @@ func createCheckURLHandler(t *testing.T, indb bool, format string) func(http.Res
 		if err != nil {
 			t.Error(err)
 		}
+
+		if format == "invalidjson" {
+			w.Header().Set("content-type", "application/json")
+			body = body[1:]
+		}
+
 		w.Header().Set(HEADER_REQCOUNTINTERVAL, "300 seconds")
 		w.Header().Set(HEADER_REQLIMIT, "10")
 		w.Header().Set(HEADER_REQCOUNT, "1")
