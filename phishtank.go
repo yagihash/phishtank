@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -94,9 +95,11 @@ func OptionAPIURL(u string) func(*Client) {
 // New creates a phishtank client with given apikey and options
 func New(apikey string, options ...Option) *Client {
 	c := &Client{
-		apikey:     apikey,
-		endpoint:   APIURL,
-		httpclient: &http.Client{},
+		apikey:   apikey,
+		endpoint: APIURL,
+		httpclient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
 	}
 
 	for _, opt := range options {

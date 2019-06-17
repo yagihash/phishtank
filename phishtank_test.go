@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -67,7 +68,7 @@ func TestNew(t *testing.T) {
 			input Option
 			want  *http.Client
 		}{
-			{name: "CheckDefaultClient", input: nil, want: &http.Client{}},
+			{name: "CheckDefaultClient", input: nil, want: &http.Client{Timeout: 30 * time.Second}},
 			{name: "CheckOptionClient", input: OptionHttpClient(&http.Client{Timeout: 100}), want: &http.Client{Timeout: 100}},
 		}
 
