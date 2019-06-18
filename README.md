@@ -1,5 +1,5 @@
 # phishtank
-[![CircleCI](https://circleci.com/gh/yagihash/phishtank.svg?style=svg)](https://circleci.com/gh/yagihash/phishtank) [![codecov](https://codecov.io/gh/yagihash/phishtank/branch/master/graph/badge.svg)](https://codecov.io/gh/yagihash/phishtank)
+[![CircleCI](https://circleci.com/gh/yagihash/phishtank.svg?style=svg)](https://circleci.com/gh/yagihash/phishtank)[![codecov](https://codecov.io/gh/yagihash/phishtank/branch/master/graph/badge.svg)](https://codecov.io/gh/yagihash/phishtank)[![Go Report Card](https://goreportcard.com/badge/github.com/yagihash/phishtank)](https://goreportcard.com/report/github.com/yagihash/phishtank)
 
 ```go
 package main
